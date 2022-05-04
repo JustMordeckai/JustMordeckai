@@ -1,16 +1,13 @@
-### Hi there 👋
+# Hi there! 👋 
 
-<!--
-**JustMordeckai/JustMordeckai** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+### print("🔰 About me 🔰")
 
-Here are some ideas to get you started:
+My name is Ryan and I'm a French **student**. 
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+---
+
+### print("📊 GitHub stats 📊")
+
+
+[![Ryan' GitHub stats](https://github-readme-stats.vercel.app/api?username=justmordeckai&show_icons=true&theme=dark&text_color=fff&border_color=79ff97&hide_title=true)](https://github.com/justmordeckai) | [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=justmordeckai&theme=dark&text_color=fff&border_color=79ff97&layout=compact)](https://github.com/justmordeckai) 
+| ----------- | ------------ |
