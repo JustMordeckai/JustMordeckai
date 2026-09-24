@@ -19,14 +19,30 @@ jobs:
       # Push via le GITHUB_TOKEN par défaut ; le PAT (lecture seule) ne sert qu'à l'API.
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - name: Compute Europe/Paris UTC offset
-        id: tz
-        run: echo "offset=$(( 10#$(TZ=Europe/Paris date +%z | cut -c2-3) ))" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
 
+      # Seule la carte profile-details (calendrier) est utilisée : les autres cartes
+      # ne voient que les repos publics.
       - uses: vn7n24fzkq/github-profile-summary-cards@d9632798b299e9ad6940449a859c30742eb5b549 # v0.12.0
         env:
           GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
         with:
           USERNAME: ${{ github.repository_owner }}
           BRANCH_NAME: main
-          UTC_OFFSET: ${{ steps.tz.outputs.offset }}
+          AUTO_PUSH: false
+
+      - name: Commit hours card
+        run: node scripts/commit-hours.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
+          USERNAME: ${{ github.repository_owner }}
+
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898733+github-actions[bot]@users.noreply.github.com'
+          git add profile-summary-card-output stats
+          git diff --cached --quiet || git commit -m 'Update profile stats cards'
+          git push
