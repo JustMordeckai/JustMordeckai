@@ -1,0 +1,32 @@
+name: Profile summary cards
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-summary-cards
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Push via le GITHUB_TOKEN par défaut ; le PAT (lecture seule) ne sert qu'à l'API.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Compute Europe/Paris UTC offset
+        id: tz
+        run: echo "offset=$(( 10#$(TZ=Europe/Paris date +%z | cut -c2-3) ))" >> "$GITHUB_OUTPUT"
+
+      - uses: vn7n24fzkq/github-profile-summary-cards@d9632798b299e9ad6940449a859c30742eb5b549 # v0.12.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        with:
+          USERNAME: ${{ github.repository_owner }}
+          BRANCH_NAME: main
+          UTC_OFFSET: ${{ steps.tz.outputs.offset }}
