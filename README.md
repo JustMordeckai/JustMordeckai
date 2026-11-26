@@ -31,10 +31,15 @@
 
 # 📊 GitHub Stats
 
-<!-- Cartes générées chaque nuit par .github/workflows/profile-summary-cards.yml (repos privés inclus) -->
+<!-- Cards generated nightly by .github/workflows/profile-summary-cards.yml (private repos included) -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./profile-summary-card-output/github_dark/0-profile-details.svg">
   <img alt="Contributions over the last year" src="./profile-summary-card-output/github/0-profile-details.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./stats/top-languages-dark.svg">
+  <img alt="Top languages over the last 12 months" src="./stats/top-languages-light.svg" width="100%">
 </picture>
 
 <picture>

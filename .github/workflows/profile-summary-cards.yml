@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Push via le GITHUB_TOKEN par défaut ; le PAT (lecture seule) ne sert qu'à l'API.
+      # Pushes with the default GITHUB_TOKEN; the read-only PAT is only used for the API.
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -42,18 +42,43 @@ jobs:
             fi
           fi
 
-      # Seule la carte profile-details (calendrier) est utilisée : les autres cartes
-      # ne voient que les repos publics.
-      - uses: vn7n24fzkq/github-profile-summary-cards@d9632798b299e9ad6940449a859c30742eb5b549 # v0.12.0
+      # Only the profile-details card (calendar) is used: the other cards only see public repos.
+      # The action wipes its output folder on every run, so each theme is generated on its own
+      # and the light card is set aside before the dark one.
+      - name: Profile details card (light)
+        uses: vn7n24fzkq/github-profile-summary-cards@d9632798b299e9ad6940449a859c30742eb5b549 # v0.12.0
         env:
           GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
         with:
           USERNAME: ${{ github.repository_owner }}
           BRANCH_NAME: main
           AUTO_PUSH: false
+          THEME: github
 
-      - name: Commit hours card
-        run: node scripts/commit-hours.mjs
+      - name: Set the light card aside
+        run: |
+          mkdir -p "$RUNNER_TEMP/cards/github"
+          mv profile-summary-card-output/github/0-profile-details.svg "$RUNNER_TEMP/cards/github/"
+
+      - name: Profile details card (dark)
+        uses: vn7n24fzkq/github-profile-summary-cards@d9632798b299e9ad6940449a859c30742eb5b549 # v0.12.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        with:
+          USERNAME: ${{ github.repository_owner }}
+          BRANCH_NAME: main
+          AUTO_PUSH: false
+          THEME: github_dark
+
+      - name: Keep only the profile details cards
+        run: |
+          mkdir -p "$RUNNER_TEMP/cards/github_dark"
+          mv profile-summary-card-output/github_dark/0-profile-details.svg "$RUNNER_TEMP/cards/github_dark/"
+          sudo rm -rf profile-summary-card-output
+          mv "$RUNNER_TEMP/cards" profile-summary-card-output
+
+      - name: Commit hours and top languages cards
+        run: node scripts/stats-cards.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
           USERNAME: ${{ github.repository_owner }}
@@ -62,6 +87,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898733+github-actions[bot]@users.noreply.github.com'
+          # Also stages the cards that are no longer generated (deletions).
           git add profile-summary-card-output stats
           git diff --cached --quiet || git commit -m 'Update profile stats cards'
           git push
