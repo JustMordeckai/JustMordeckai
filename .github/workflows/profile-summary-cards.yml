@@ -23,6 +23,25 @@ jobs:
         with:
           node-version: 22
 
+      # Fail early with an explicit error when the PAT is missing, expired or revoked,
+      # and warn two weeks before it expires.
+      - name: Check METRICS_TOKEN
+        env:
+          TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: |
+          if ! headers=$(curl -fsS -o /dev/null -D - -H "Authorization: Bearer $TOKEN" https://api.github.com/user); then
+            echo '::error title=METRICS_TOKEN invalid::Secret METRICS_TOKEN is missing, expired or revoked. Create a fine-grained PAT (all repositories, Contents and Metadata read-only) and update the secret.'
+            exit 1
+          fi
+          expiry=$(printf '%s' "$headers" | tr -d '\r' | sed -n 's/^github-authentication-token-expiration: //Ip')
+          if [ -n "$expiry" ]; then
+            days=$(( ($(date -d "$expiry" +%s) - $(date +%s)) / 86400 ))
+            echo "METRICS_TOKEN expires on $expiry ($days days left)"
+            if [ "$days" -lt 14 ]; then
+              echo "::warning title=METRICS_TOKEN expires soon::Secret METRICS_TOKEN expires in $days days ($expiry)."
+            fi
+          fi
+
       # Seule la carte profile-details (calendrier) est utilisée : les autres cartes
       # ne voient que les repos publics.
       - uses: vn7n24fzkq/github-profile-summary-cards@d9632798b299e9ad6940449a859c30742eb5b549 # v0.12.0
